@@ -1,0 +1,13 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: my-configmap
+data:
+  node.conf: |
+    protected-mode no
+    port 6379
+    tcp-backlog 511
+    loglevel notice
+    logfile ""
+    dir /data
+    {{ .Values.global.dapp.ci }}
