@@ -11,7 +11,7 @@ spec:
     spec:
       containers:
       - name: main
-        command: ["/bin/bash", "-c", "sleep 10; touch /run/RUNNING ; while true ; do sleep 1 ; data ; done"]
+        command: ["/bin/bash", "-c", "sleep 10; touch /run/RUNNING ; while true ; do sleep 1 ; date ; done"]
         image: ubuntu:16.04
         livenessProbe:
           exec:
