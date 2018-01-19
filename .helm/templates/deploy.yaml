@@ -1,0 +1,38 @@
+apiVersion: apps/v1beta1
+kind: Deployment
+metadata:
+  name: myserver
+spec:
+  replicas: 5
+  template:
+    metadata:
+      labels:
+        service: myserver
+    spec:
+      initContainers:
+      - name: init
+        command: ["/bin/bash", "-c", "for i in {1..15}; do echo init - $(date) ; sleep 1 ; done"]
+        image: ubuntu:16.04
+      containers:
+      - name: main
+        command: ["/bin/bash", "-c", "while true ; do date ; sleep 1 ; done"]
+        image: ubuntu:16.04
+---
+apiVersion: batch/v1
+kind: Job
+metadata:
+  name: myserver-initcontainer-log
+  annotations:
+    "helm.sh/hook": post-install,post-upgrade
+    "helm.sh/hook-weight": "0"
+spec:
+  activeDeadlineSeconds: 100
+  template:
+    metadata:
+      name: check-release-hook
+    spec:
+      restartPolicy: Never
+      containers:
+      - name: micheck-release-hookgrate
+        command: ["kubectl", "get", "pod"]
+        image: ubuntu:16.04
