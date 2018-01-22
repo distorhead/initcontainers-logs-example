@@ -1,3 +1,14 @@
-dimg "logger" do
+dimg_group do
   docker.from "ubuntu:16.04"
+
+  dimg "kubectl" do
+    shell.before_install do
+      run "apt-get update"
+      run "apt-get install -y curl"
+      run "cd /tmp"
+      run "curl -LO https://storage.googleapis.com/kubernetes-release/release/$(curl -s https://storage.googleapis.com/kubernetes-release/release/stable.txt)/bin/linux/amd64/kubectl"
+      run "chmod +x ./kubectl"
+      run "mv ./kubectl /usr/local/bin/kubectl"
+    end
+  end
 end

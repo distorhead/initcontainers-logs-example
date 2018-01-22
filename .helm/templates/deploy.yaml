@@ -1,13 +1,14 @@
 apiVersion: apps/v1beta1
 kind: Deployment
 metadata:
-  name: myserver
+  name: myserver-app
 spec:
   replicas: 5
   template:
     metadata:
       labels:
-        service: myserver
+        service: myserver-app
+        "watch-initContainer-logs": "true"
     spec:
       initContainers:
       - name: init
@@ -15,7 +16,6 @@ spec:
         image: ubuntu:16.04
       containers:
       - name: one
-        command: ["/bin/bash", "-c", "while true ; do date ; sleep 1 ; done"]
         image: ubuntu:16.04
       - name: two
         command: ["/bin/bash", "-c", "while true ; do date ; sleep 1 ; done"]
@@ -58,5 +58,7 @@ spec:
       restartPolicy: Never
       containers:
       - name: myserver-initcontainer-log
-        command: ["/bin/bash", "-c", "ls / ; sleep 10 ; echo EXIT!"]
-        image: ubuntu:16.04
+        command: ["/bin/bash", "-ec", 'for pod in $(kubectl get pod  -l="watch-initContainer-logs=true" -o="custom-columns=:metadata.name" --no-headers=true) ; do echo "# $pod initContainer \"init\"" ; kubectl logs $pod -c init -f ; done']
+{{ tuple "kubectl" . | include "dapp_container_image" | indent 8 }}
+        env:
+{{ tuple "kubectl" . | include "dapp_container_env" | indent 10 }}
