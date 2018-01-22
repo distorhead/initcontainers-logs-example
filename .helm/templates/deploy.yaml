@@ -14,8 +14,31 @@ spec:
         command: ["/bin/bash", "-c", "for i in {1..15}; do echo init - $(date) ; sleep 1 ; done"]
         image: ubuntu:16.04
       containers:
-      - name: main
+      - name: one
         command: ["/bin/bash", "-c", "while true ; do date ; sleep 1 ; done"]
+        image: ubuntu:16.04
+      - name: two
+        command: ["/bin/bash", "-c", "while true ; do date ; sleep 1 ; done"]
+        image: ubuntu:16.04
+---
+apiVersion: batch/v1
+kind: Job
+metadata:
+  name: myserver-migrate-hook
+  annotations:
+    "helm.sh/hook": pre-install,pre-upgrade
+    "helm.sh/hook-weight": "0"
+    "dapp/watch-logs": "true"
+spec:
+  activeDeadlineSeconds: 100
+  template:
+    metadata:
+      name: myserver-migrate-hook
+    spec:
+      restartPolicy: Never
+      containers:
+      - name: myserver-migrate-hook
+        command: ["/bin/bash", "-c", "echo MIGRATING ... ; echo . ; sleep 1 ; echo . ; sleep 1; echo MIGRATION DONE!"]
         image: ubuntu:16.04
 ---
 apiVersion: batch/v1
@@ -25,14 +48,15 @@ metadata:
   annotations:
     "helm.sh/hook": post-install,post-upgrade
     "helm.sh/hook-weight": "0"
+    "dapp/watch-logs": "true"
 spec:
   activeDeadlineSeconds: 100
   template:
     metadata:
-      name: check-release-hook
+      name: myserver-initcontainer-log
     spec:
       restartPolicy: Never
       containers:
-      - name: micheck-release-hookgrate
-        command: ["kubectl", "get", "pod"]
+      - name: myserver-initcontainer-log
+        command: ["/bin/bash", "-c", "ls / ; sleep 10 ; echo EXIT!"]
         image: ubuntu:16.04
